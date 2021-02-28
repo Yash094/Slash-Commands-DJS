@@ -1,26 +1,26 @@
 const discord = require("discord.js");
 const client = new discord.Client();
-
+const config = require("./config.json");
 client.on("ready", () => {
   console.log("ready");
 
   client.api
     .applications(client.user.id)
-    .guilds("664505860327997461")
+    .guilds(config.guildid)
     .commands.post({
       data: {
-        name: "hello",
-        description: "Replies with Hello World!"
+        name: "ping",
+        description: "Replies with pong!"
       }
     });
 
   client.api
     .applications(client.user.id)
-    .guilds("664505860327997461")
+    .guilds(config.guildid)
     .commands.post({
       data: {
-        name: "echo",
-        description: "Echos your text as an embed!",
+        name: "embed",
+        description: "Embeds your text as an embed!",
 
         options: [
           {
@@ -34,17 +34,23 @@ client.on("ready", () => {
             description: "color of the embed",
             type: 3,
             required: true
+          },
+          {
+            name: "title",
+            description: "title of the embed",
+            type: 3,
+            required: true
           }
         ]
       }
     }),
     client.api
       .applications(client.user.id)
-      .guilds("664505860327997461")
+      .guilds(config.guildid)
       .commands.post({
         data: {
           name: "rps",
-          description: "Echos your text as an embed!",
+          description: "Play RPS With Bot",
 
           options: [
             {
@@ -75,31 +81,33 @@ client.on("ready", () => {
     const command = interaction.data.name.toLowerCase();
     const args = interaction.data.options;
 
-    if (command == "hello") {
+    if (command == "ping") {
       client.api.interactions(interaction.id, interaction.token).callback.post({
         data: {
           type: 4,
           data: {
-            content: "Hello World!"
+            content: "Pong!"
           }
         }
       });
     }
 
-    if (command == "echo") {
-      const description = args.find(arg => arg.name.toLowerCase() == "content")
-        .value;
+    if (command == "embed") {
+      const description = interaction.data.options[0].value;
       const color = interaction.data.options[1].value;
+      console.log(color);
+      const myuser = interaction.member.user.username;
+      const title = interaction.data.options[2].value;
       const embed = new discord.MessageEmbed()
-        .setTitle("Echo!")
+        .setTitle(title)
         .setColor(color)
         .setDescription(description)
-        .setAuthor(interaction.member.user.username);
+        .setAuthor(myuser);
 
       client.api.interactions(interaction.id, interaction.token).callback.post({
         data: {
           type: 4,
-          data: await createAPIMessage(interaction, embed)
+          data: await Message(interaction, embed)
         }
       });
     }
@@ -107,7 +115,7 @@ client.on("ready", () => {
       const selected = interaction.data.options[0].value;
       const chooseArr = ["rock", "paper", "scissors"];
       const botChoice = chooseArr[Math.floor(Math.random() * chooseArr.length)];
-      function getResult(me, botChosen) {
+      function Result(me, botChosen) {
         if (
           (me === "rock" && botChosen === "scissors") ||
           (me === "paper" && botChosen === "rock") ||
@@ -124,7 +132,7 @@ client.on("ready", () => {
         data: {
           type: 4,
           data: {
-            content: getResult(selected, botChoice)
+            content: Result(selected, botChoice)
           }
         }
       });
@@ -132,15 +140,15 @@ client.on("ready", () => {
   });
 });
 
-async function createAPIMessage(interaction, content) {
-  const apiMessage = await discord.APIMessage.create(
+async function Message(interaction, content) {
+  const Msg = await discord.APIMessage.create(
     client.channels.resolve(interaction.channel_id),
     content
   )
     .resolveData()
     .resolveFiles();
 
-  return { ...apiMessage.data, files: apiMessage.files };
+  return { ...Msg.data, files: Msg.files };
 }
 
-client.login(require("./config.json").token);
+client.login(config.token);
