@@ -2,7 +2,7 @@
 
 **This Repository is for a Discord Bot which uses slash commands**
 
-## COMMANDS
+## COMMANDS .
 
 Commands created are guild specific to use the commands in all the guild just
 `client.api .applications(client.user.id) .guilds(config.guildid) .commands.post({})`
